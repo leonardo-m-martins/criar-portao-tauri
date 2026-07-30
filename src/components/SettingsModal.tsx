@@ -52,21 +52,21 @@ export function SettingsModal({ opened, onClose }: SettingsModalProps) {
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title="OpenAPI Credentials" centered>
+    <Modal opened={opened} onClose={onClose} title="Credenciais InvenTree" centered>
       <Stack>
         <TextInput
-          label="Base URL"
-          description="The endpoint for the OpenAPI service"
-          placeholder="https://api.openai.com/v1"
+          label="URL Base"
+          description="Endpoint para sua instância InvenTree"
+          placeholder="https://inventree.seudominio.com/"
           value={baseUrl}
           onChange={(e) => setBaseUrl(e.currentTarget.value)}
           disabled={isLoading}
         />
         
         <PasswordInput
-          label="API Token"
-          description="Your secret API key"
-          placeholder="sk-..."
+          label="Token API"
+          description="Sua chave secreta de API"
+          placeholder="inv-..."
           value={token}
           onChange={(e) => setToken(e.currentTarget.value)}
           disabled={isLoading}
