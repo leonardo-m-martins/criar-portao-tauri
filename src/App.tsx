@@ -14,12 +14,13 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useEffect, useState } from "react";
-import { Company, CompanyService, OpenAPI, PaginatedCompanyList } from "./api";
+import { useEffect, useMemo, useState } from "react";
+import { Company, CompanyService, OpenAPI, PaginatedCompanyList, Part } from "./api";
 import { loadSettings } from "./utils/settings";
 import { useDisclosure } from "@mantine/hooks";
 import { SettingsModal } from "./components/SettingsModal";
-import { calculateMaterials, Material } from "./utils/calculation";
+import { buildMaterialsMap, calculateMaterials, Material, PartsMap, ProductDetails } from "./utils/calculation";
+import { getPartsMapByIpns } from "./utils/parts";
 
 // ============================================================
 // TODO: PDF FUNCTIONS
@@ -141,10 +142,10 @@ export default function App() {
   const [width, setWidth] = useState(3000);
   const [height, setHeight] = useState(2000);
 
-  const [type1, setType1] = useState("Traz");
-  const [type2, setType2] = useState("Traz");
+  const [type1, setType1] = useState<"Traz" | "Dentro">("Traz");
+  const [type2, setType2] = useState<"Traz" | "Dentro">("Traz");
 
-  const [closed, setClosed] = useState("Fechada");
+  const [closed, setClosed] = useState<"Fechada" | "Transvision">("Fechada");
 
   const [flag, setFlag] = useState(false);
   const [trapdoor, setTrapdoor] = useState(false);
@@ -155,9 +156,25 @@ export default function App() {
   // Material state
   // ------------------------------------------------------------
 
-  // const materials = calculateMaterials();
-  const materials: Material[] = [];
+  const [partsMap, setPartsMap] = useState<PartsMap>();
+  const [materials, setMaterials] = useState<Material[]>([]);
 
+  useEffect(() => {
+      let productDetails: ProductDetails = {
+        folga: 45,
+        width: width,
+        height: height,
+        type1: type1,
+        type2: type2,
+        fechadaOuTransvision: closed,
+        flag: flag,
+        door: door,
+        trapdoor: trapdoor
+      }
+      setMaterials([]);
+      setMaterials(calculateMaterials(productDetails, partsMap));
+    }, [width, height, type1, type2, closed, flag, door, trapdoor, partsMap]
+  );
 
   async function handlePdf() {
     const blob = await generatePdf({
@@ -177,6 +194,22 @@ export default function App() {
 
     URL.revokeObjectURL(url);
   }
+
+  useEffect(() => {
+    async function getPartsMapEffect() {
+      console.log("Fetching parts...");
+      const map = await getPartsMapByIpns();
+      setPartsMap(map);
+    }
+
+    if (configured) {
+      getPartsMapEffect();
+    }
+  }, [configured])
+
+  useEffect(() => {
+
+  }, [configured, partsMap])
 
 
   return (
@@ -397,13 +430,21 @@ export default function App() {
             <Checkbox
               label="Portinhola"
               checked={door}
-              onChange={(e)=>setDoor(e.currentTarget.checked)}
+              onChange={(e)=> {
+                setDoor(e.currentTarget.checked);
+                if (e.currentTarget.checked)
+                  setTrapdoor(false);
+              }}
             />
 
             <Checkbox
               label="Alçapão"
               checked={trapdoor}
-              onChange={(e)=>setTrapdoor(e.currentTarget.checked)}
+              onChange={(e)=> {
+                setTrapdoor(e.currentTarget.checked);
+                if (e.currentTarget.checked)
+                  setDoor(false);
+              }}
             />
 
           </Stack>
@@ -438,15 +479,27 @@ export default function App() {
               </Table.Thead>
 
               <Table.Tbody>
-                {materials.map((m,i)=>(
+                {materials.map((m, i)=>(
                   <Table.Tr key={i}>
 
                     <Table.Td>
-                      <Checkbox checked={m.selected}/>
+                        <Checkbox
+                          checked={m.selected}
+                          onChange={(event) => {
+                            const checked = event.currentTarget.checked;
+                            setMaterials((prev) =>
+                              prev.map((item) =>
+                                item.part.IPN === m.part.IPN && item.part.name === m.part.name
+                                  ? { ...item, selected: checked }
+                                  : item
+                              )
+                            );
+                          }}
+                        />
                     </Table.Td>
 
                     <Table.Td>
-                      {m.item}
+                      {m.part.name}
                     </Table.Td>
 
                     <Table.Td>

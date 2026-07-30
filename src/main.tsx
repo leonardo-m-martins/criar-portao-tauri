@@ -52,7 +52,8 @@ const themeOverride = createTheme({
       }
     }),
   },
-  variantColorResolver: variantColorResolverOverride
+  variantColorResolver: variantColorResolverOverride,
+  cursorType: "pointer",
 })
 
 
