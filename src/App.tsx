@@ -201,6 +201,8 @@ export default function App() {
           <Tabs.Tab value="material">
             Material
           </Tabs.Tab>
+          <div className="flex-1"/>
+          <Button variant="transparent" onClick={open}>Configurações</Button>
         </Tabs.List>
 
 
