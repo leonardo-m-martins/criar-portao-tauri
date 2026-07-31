@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "bump:patch": "v=$(npm version patch --no-git-tag-version) && node -e 'const fs=require(\"fs\"); const pkg=require(\"./package.json\"); const p=\"src-tauri/tauri.conf.json\"; const t=JSON.parse(fs.readFileSync(p)); if(t.package){t.package.version=pkg.version;}else{t.version=pkg.version;} fs.writeFileSync(p, JSON.stringify(t, null, 2) + \"\\n\");' && node -e 'const fs=require(\"fs\"); const pkg=require(\"./package.json\"); const p=\"src-tauri/Cargo.toml\"; let c=fs.readFileSync(p,\"utf8\"); c=c.replace(/^version = \".*?\"/m, \"version = \\\"\" + pkg.version + \"\\\"\"); fs.writeFileSync(p, c);' && cargo check --manifest-path src-tauri/Cargo.toml && git add package.json package-lock.json src-tauri/tauri.conf.json src-tauri/Cargo.toml src-tauri/Cargo.lock && git commit -m \"$v\" && git tag \"$v\"",
     "tauri": "tauri"
   },
   "dependencies": {
