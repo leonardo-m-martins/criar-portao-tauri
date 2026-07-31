@@ -22,30 +22,9 @@ import { calculateMaterials, Material, PartsMap, ProductDetails } from "./utils/
 import { getPartsMapByIpns } from "./utils/parts";
 import { generatePdf } from "./utils/genPdf";
 import { openPdfWindow } from "./utils/pdfWindow";
-import { check } from "@tauri-apps/plugin-updater";
-import { relaunch } from "@tauri-apps/plugin-process";
+import { UpdaterWrapper } from "./components/UpdaterWrapper";
 
 export default function App() {
-
-  // ------------------------------------------------------------
-  // Update
-  // ------------------------------------------------------------
-
-  useEffect(() => {
-    async function checkForUpdate() {
-      try {
-        const update = await check();
-        if (update) {
-          await update.downloadAndInstall();
-          await relaunch();
-        }
-      } catch (error) {
-        console.error(`Falha ao procurar por atualizações: ${error}`);
-      }
-    }
-
-    checkForUpdate()
-  })
 
   const [configured, setConfigured] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
@@ -228,186 +207,164 @@ export default function App() {
   }, [configured])
 
   return (
-    <Paper
-      maw={900}
-      mx="auto"
-      p="xl"
-    >
-      <SettingsModal opened={opened} onClose={close} />
+    <UpdaterWrapper>
+      <Paper
+        maw={900}
+        mx="auto"
+        p="xl"
+      >
+        <SettingsModal opened={opened} onClose={close} />
 
-      <Tabs defaultValue="client">
+        <Tabs defaultValue="client">
 
-        <Tabs.List>
-          <Tabs.Tab value="client">
-            Clientes
-          </Tabs.Tab>
-
-          <Tabs.Tab value="product">
-            Produto
-          </Tabs.Tab>
-
-          <Tabs.Tab value="material">
-            Material
-          </Tabs.Tab>
-          <div className="flex-1"/>
-          <Button variant="transparent" onClick={open}>Configurações</Button>
-        </Tabs.List>
-
-
-        {/* ======================================================
-            CLIENT
-        ====================================================== */}
-
-        <Tabs.Panel value="client" pt="xl">
-          <Stack>
-            <Title order={2}>
+          <Tabs.List>
+            <Tabs.Tab value="client">
               Clientes
-            </Title>
+            </Tabs.Tab>
 
-            <TextInput
-              label="Cliente"
-              placeholder="Nome do cliente"
-              value={clientName}
-              onChange={(e) => setClientName(e.currentTarget.value)}
-            />
-
-            <TextInput
-              label="Telefone"
-              placeholder="(77) 91234-5678"
-              value={phone}
-              onChange={(e) => setPhone(e.currentTarget.value)}
-            />
-
-            <TextInput
-              label="Email"
-              placeholder="email@exemplo.com"
-              value={email}
-              onChange={(e) => setEmail(e.currentTarget.value)}
-            />
-
-            <TextInput
-              label="CPF ou CNPJ"
-              placeholder="000.000.000-00"
-              value={taxId}
-              onChange={(e) => setTaxId(e.currentTarget.value)}
-            />
-
-            <Button onClick={handleAddClient} disabled={loading}>
-              Adicionar Cliente
-            </Button>
-
-            <div className="border border-gray-200 rounded-md">
-              <Table highlightOnHover>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th style={{ width: 40 }}></Table.Th> {/* Selection column header */}
-                    <Table.Th>Nome</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                
-                <Table.Tbody>
-                  {currentClientPage.map((client) => {
-                    const isSelected = selectedClient === client.name;
-                    
-                    return (
-                      <Table.Tr 
-                        key={client.name}
-                        onClick={() => setSelectedClient(client.name)}
-                        style={{ cursor: 'pointer' }}
-                        bg={isSelected ? 'var(--mantine-color-default-hover)' : undefined}
-                      >
-                        <Table.Td>
-                          <Radio 
-                            checked={isSelected} 
-                            onChange={() => setSelectedClient(client.name)}
-                            aria-label={client.name}
-                          />
-                        </Table.Td>
-                        <Table.Td>{client.name}</Table.Td>
-                      </Table.Tr>
-                    );
-                  })}
-                </Table.Tbody>
-              </Table>
-            </div>
-
-            <Container className="flex justify-between w-full">
-              <Button
-                variant="default"
-                onClick={loadPreviousClientPage}
-                disabled={offset < PAGE_STEP}
-              >
-                Página Anterior
-              </Button>
-              <Button
-                variant="default"
-                onClick={loadNextClientPage}
-                disabled={clients == null || (offset + PAGE_STEP) > clients.count}
-              >
-                Próxima Página
-              </Button>
-            </Container>
-          </Stack>
-        </Tabs.Panel>
-
-
-
-        {/* ======================================================
-            PRODUCT
-        ====================================================== */}
-
-
-        <Tabs.Panel value="product" pt="xl">
-          <Stack>
-            <Title order={2}>
+            <Tabs.Tab value="product">
               Produto
-            </Title>
+            </Tabs.Tab>
 
-            <TextInput
-              label="Cliente"
-              value={selectedClient}
-              disabled
-            />
+            <Tabs.Tab value="material">
+              Material
+            </Tabs.Tab>
+            <div className="flex-1"/>
+            <Button variant="transparent" onClick={open}>Configurações</Button>
+          </Tabs.List>
 
-            <TextInput
-              label="Cor"
-              value={color}
-              onChange={(e)=>setColor(e.currentTarget.value)}
-            />
 
-            <TextInput
-              label="Código"
-              value={code}
-              onChange={(e)=>setCode(e.currentTarget.value)}
-            />
+          {/* ======================================================
+              CLIENT
+          ====================================================== */}
 
-            <Group justify="center" gap="xl" align="flex-start">
-              <Radio.Group
-                value={type1}
-                onChange={setType1}
-              >
-                <Stack gap="xs">
-                  <Radio value="Traz" label="Traz"/>
-                  <Radio value="Dentro" label="Dentro"/>
-                </Stack>
-              </Radio.Group>
+          <Tabs.Panel value="client" pt="xl">
+            <Stack>
+              <Title order={2}>
+                Clientes
+              </Title>
 
-              <Stack>
-                <div
-                  className="w-40 h-40 bg-gray-200 border-2 border-gray-600"
-                />
+              <TextInput
+                label="Cliente"
+                placeholder="Nome do cliente"
+                value={clientName}
+                onChange={(e) => setClientName(e.currentTarget.value)}
+              />
 
-                <NumberInput
-                  label="Largura (milímetros)"
-                  value={width}
-                  onChange={(v)=>setWidth(Number(v))}
-                />
-              </Stack>
+              <TextInput
+                label="Telefone"
+                placeholder="(77) 91234-5678"
+                value={phone}
+                onChange={(e) => setPhone(e.currentTarget.value)}
+              />
 
-              <Stack>
+              <TextInput
+                label="Email"
+                placeholder="email@exemplo.com"
+                value={email}
+                onChange={(e) => setEmail(e.currentTarget.value)}
+              />
+
+              <TextInput
+                label="CPF ou CNPJ"
+                placeholder="000.000.000-00"
+                value={taxId}
+                onChange={(e) => setTaxId(e.currentTarget.value)}
+              />
+
+              <Button onClick={handleAddClient} disabled={loading}>
+                Adicionar Cliente
+              </Button>
+
+              <div className="border border-gray-200 rounded-md">
+                <Table highlightOnHover>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th style={{ width: 40 }}></Table.Th> {/* Selection column header */}
+                      <Table.Th>Nome</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  
+                  <Table.Tbody>
+                    {currentClientPage.map((client) => {
+                      const isSelected = selectedClient === client.name;
+                      
+                      return (
+                        <Table.Tr 
+                          key={client.name}
+                          onClick={() => setSelectedClient(client.name)}
+                          style={{ cursor: 'pointer' }}
+                          bg={isSelected ? 'var(--mantine-color-default-hover)' : undefined}
+                        >
+                          <Table.Td>
+                            <Radio 
+                              checked={isSelected} 
+                              onChange={() => setSelectedClient(client.name)}
+                              aria-label={client.name}
+                            />
+                          </Table.Td>
+                          <Table.Td>{client.name}</Table.Td>
+                        </Table.Tr>
+                      );
+                    })}
+                  </Table.Tbody>
+                </Table>
+              </div>
+
+              <Container className="flex justify-between w-full">
+                <Button
+                  variant="default"
+                  onClick={loadPreviousClientPage}
+                  disabled={offset < PAGE_STEP}
+                >
+                  Página Anterior
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={loadNextClientPage}
+                  disabled={clients == null || (offset + PAGE_STEP) > clients.count}
+                >
+                  Próxima Página
+                </Button>
+              </Container>
+            </Stack>
+          </Tabs.Panel>
+
+
+
+          {/* ======================================================
+              PRODUCT
+          ====================================================== */}
+
+
+          <Tabs.Panel value="product" pt="xl">
+            <Stack>
+              <Title order={2}>
+                Produto
+              </Title>
+
+              <TextInput
+                label="Cliente"
+                value={selectedClient}
+                disabled
+              />
+
+              <TextInput
+                label="Cor"
+                value={color}
+                onChange={(e)=>setColor(e.currentTarget.value)}
+              />
+
+              <TextInput
+                label="Código"
+                value={code}
+                onChange={(e)=>setCode(e.currentTarget.value)}
+              />
+
+              <Group justify="center" gap="xl" align="flex-start">
                 <Radio.Group
-                  value={type2}
-                  onChange={setType2}
+                  value={type1}
+                  onChange={setType1}
                 >
                   <Stack gap="xs">
                     <Radio value="Traz" label="Traz"/>
@@ -415,133 +372,157 @@ export default function App() {
                   </Stack>
                 </Radio.Group>
 
-                <NumberInput
-                  label="Altura (milímetros)"
-                  value={height}
-                  onChange={(v)=>setHeight(Number(v))}
-                />
-              </Stack>
-            </Group>
+                <Stack>
+                  <div
+                    className="w-40 h-40 bg-gray-200 border-2 border-gray-600"
+                  />
+
+                  <NumberInput
+                    label="Largura (milímetros)"
+                    value={width}
+                    onChange={(v)=>setWidth(Number(v))}
+                  />
+                </Stack>
+
+                <Stack>
+                  <Radio.Group
+                    value={type2}
+                    onChange={setType2}
+                  >
+                    <Stack gap="xs">
+                      <Radio value="Traz" label="Traz"/>
+                      <Radio value="Dentro" label="Dentro"/>
+                    </Stack>
+                  </Radio.Group>
+
+                  <NumberInput
+                    label="Altura (milímetros)"
+                    value={height}
+                    onChange={(v)=>setHeight(Number(v))}
+                  />
+                </Stack>
+              </Group>
 
 
-            <Radio.Group
-              label="Fechada/Transvision"
-              value={closed}
-              onChange={setClosed}
-              className="gap-1"
-            >
-              <Stack gap="xs">
-                <Radio value="Fechada" label="Fechada"/>
-                <Radio value="Transvision" label="Transvision"/>
-              </Stack>
-            </Radio.Group>
+              <Radio.Group
+                label="Fechada/Transvision"
+                value={closed}
+                onChange={setClosed}
+                className="gap-1"
+              >
+                <Stack gap="xs">
+                  <Radio value="Fechada" label="Fechada"/>
+                  <Radio value="Transvision" label="Transvision"/>
+                </Stack>
+              </Radio.Group>
 
-            <Checkbox
-              label="Bandeira"
-              checked={flag}
-              onChange={(e)=>setFlag(e.currentTarget.checked)}
-            />
+              <Checkbox
+                label="Bandeira"
+                checked={flag}
+                onChange={(e)=>setFlag(e.currentTarget.checked)}
+              />
 
-            <Checkbox
-              label="Portinhola"
-              checked={door}
-              onChange={(e)=> {
-                setDoor(e.currentTarget.checked);
-                if (e.currentTarget.checked)
-                  setTrapdoor(false);
-              }}
-            />
+              <Checkbox
+                label="Portinhola"
+                checked={door}
+                onChange={(e)=> {
+                  setDoor(e.currentTarget.checked);
+                  if (e.currentTarget.checked)
+                    setTrapdoor(false);
+                }}
+              />
 
-            <Checkbox
-              label="Alçapão"
-              checked={trapdoor}
-              onChange={(e)=> {
-                setTrapdoor(e.currentTarget.checked);
-                if (e.currentTarget.checked)
-                  setDoor(false);
-              }}
-            />
+              <Checkbox
+                label="Alçapão"
+                checked={trapdoor}
+                onChange={(e)=> {
+                  setTrapdoor(e.currentTarget.checked);
+                  if (e.currentTarget.checked)
+                    setDoor(false);
+                }}
+              />
 
-          </Stack>
-        </Tabs.Panel>
-
-
-
-        {/* ======================================================
-            MATERIAL
-        ====================================================== */}
+            </Stack>
+          </Tabs.Panel>
 
 
-        <Tabs.Panel value="material" pt="xl">
-          <Stack>
-            <Title order={2}>
-              Material
-            </Title>
 
-            <Text>
-              Materiais calculados:
-            </Text>
+          {/* ======================================================
+              MATERIAL
+          ====================================================== */}
 
-            <Table>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th/>
-                  <Table.Th>Item</Table.Th>
-                  <Table.Th>Quantidade</Table.Th>
-                  <Table.Th>Medida</Table.Th>
-                  <Table.Th>Unidade</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
 
-              <Table.Tbody>
-                {materials.map((m, i)=>(
-                  <Table.Tr key={i}>
+          <Tabs.Panel value="material" pt="xl">
+            <Stack>
+              <Title order={2}>
+                Material
+              </Title>
 
-                    <Table.Td>
-                        <Checkbox
-                          checked={m.selected}
-                          onChange={(event) => {
-                            const checked = event.currentTarget.checked;
-                            setMaterials((prev) =>
-                              prev.map((item) =>
-                                item.part.IPN === m.part.IPN && item.part.name === m.part.name
-                                  ? { ...item, selected: checked }
-                                  : item
-                              )
-                            );
-                          }}
-                        />
-                    </Table.Td>
+              <Text>
+                Materiais calculados:
+              </Text>
 
-                    <Table.Td>
-                      {m.part.name}
-                    </Table.Td>
-
-                    <Table.Td>
-                      {m.quantity}
-                    </Table.Td>
-
-                    <Table.Td>
-                      {m.measure}
-                    </Table.Td>
-
-                    <Table.Td>
-                      {m.unit}
-                    </Table.Td>
-
+              <Table>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th/>
+                    <Table.Th>Item</Table.Th>
+                    <Table.Th>Quantidade</Table.Th>
+                    <Table.Th>Medida</Table.Th>
+                    <Table.Th>Unidade</Table.Th>
                   </Table.Tr>
-                ))}
-              </Table.Tbody>
-            </Table>
+                </Table.Thead>
+
+                <Table.Tbody>
+                  {materials.map((m, i)=>(
+                    <Table.Tr key={i}>
+
+                      <Table.Td>
+                          <Checkbox
+                            checked={m.selected}
+                            onChange={(event) => {
+                              const checked = event.currentTarget.checked;
+                              setMaterials((prev) =>
+                                prev.map((item) =>
+                                  item.part.IPN === m.part.IPN && item.part.name === m.part.name
+                                    ? { ...item, selected: checked }
+                                    : item
+                                )
+                              );
+                            }}
+                          />
+                      </Table.Td>
+
+                      <Table.Td>
+                        {m.part.name}
+                      </Table.Td>
+
+                      <Table.Td>
+                        {m.quantity}
+                      </Table.Td>
+
+                      <Table.Td>
+                        {m.measure}
+                      </Table.Td>
+
+                      <Table.Td>
+                        {m.unit}
+                      </Table.Td>
+
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
 
 
-            <Button onClick={handlePdf}>
-              Gerar Ficha PDF
-            </Button>
+              <Button onClick={handlePdf}>
+                Gerar Ficha PDF
+              </Button>
 
-          </Stack>
-        </Tabs.Panel>
-      </Tabs>
-    </Paper>
+            </Stack>
+          </Tabs.Panel>
+        </Tabs>
+      </Paper>
+    </UpdaterWrapper>
   );
 }
