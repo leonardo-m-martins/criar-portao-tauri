@@ -1,4 +1,4 @@
-import { Part, PartService } from "../api";
+import { Part } from "../api";
 import { getPartList } from "../api/wrappers/wparts";
 
 export const PART_IPNS = {

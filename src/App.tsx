@@ -2,7 +2,6 @@ import {
   Button,
   Checkbox,
   Container,
-  Flex,
   Group,
   NumberInput,
   Paper,
@@ -14,12 +13,12 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useEffect, useMemo, useState } from "react";
-import { Company, CompanyService, OpenAPI, PaginatedCompanyList, Part } from "./api";
+import { useEffect, useState } from "react";
+import { Company, CompanyService, OpenAPI, PaginatedCompanyList } from "./api";
 import { loadSettings } from "./utils/settings";
 import { useDisclosure } from "@mantine/hooks";
 import { SettingsModal } from "./components/SettingsModal";
-import { buildMaterialsMap, calculateMaterials, Material, PartsMap, ProductDetails } from "./utils/calculation";
+import { calculateMaterials, Material, PartsMap, ProductDetails } from "./utils/calculation";
 import { getPartsMapByIpns } from "./utils/parts";
 import { generatePdf } from "./utils/genPdf";
 import { openPdfWindow } from "./utils/pdfWindow";
