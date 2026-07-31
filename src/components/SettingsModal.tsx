@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Modal, TextInput, PasswordInput, Button, Group, Stack } from '@mantine/core';
+import { Modal, TextInput, PasswordInput, Button, Group, Stack, Text, Code } from '@mantine/core';
 import { clearSettings, loadSettings, saveSettings } from '../utils/settings';
+import { getVersion } from '@tauri-apps/api/app';
 
 interface SettingsModalProps {
   opened: boolean;
@@ -11,6 +12,7 @@ export function SettingsModal({ opened, onClose }: SettingsModalProps) {
   const [baseUrl, setBaseUrl] = useState('');
   const [token, setToken] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [version, setVersion] = useState("");
 
   // Fetch current settings from Tauri store whenever the modal opens
   useEffect(() => {
@@ -25,6 +27,10 @@ export function SettingsModal({ opened, onClose }: SettingsModalProps) {
         .finally(() => setIsLoading(false));
     }
   }, [opened]);
+
+  useEffect(() => {
+    getVersion().then(v => setVersion(v));
+  }, [])
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -52,10 +58,10 @@ export function SettingsModal({ opened, onClose }: SettingsModalProps) {
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Credenciais InvenTree" centered>
+    <Modal opened={opened} onClose={onClose} title="Configurações" centered>
       <Stack>
         <TextInput
-          label="URL Base"
+          label="URL Base (InvenTree)"
           description="Endpoint para sua instância InvenTree"
           placeholder="https://inventree.seudominio.com/"
           value={baseUrl}
@@ -64,7 +70,7 @@ export function SettingsModal({ opened, onClose }: SettingsModalProps) {
         />
         
         <PasswordInput
-          label="Token API"
+          label="Token API (InvenTree)"
           description="Sua chave secreta de API"
           placeholder="inv-..."
           value={token}
@@ -73,6 +79,10 @@ export function SettingsModal({ opened, onClose }: SettingsModalProps) {
         />
 
         <Group justify="flex-end" mt="md">
+          <Text className="text-gray-500" size="md">
+            Versão: <Code className="text-green-400" bg="#efefef">{version}</Code>
+          </Text>
+          <div className="flex-1" />
           <Button 
             variant="light" 
             color="red" 
