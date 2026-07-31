@@ -8,6 +8,7 @@
     "opener:default",
     "core:webview:allow-create-webview-window",
     "process:default",
+    "dialog:default",
     "store:default"
   ]
 }

@@ -5,11 +5,15 @@ const store = await Store.load("settings.json");
 export interface Settings {
   baseUrl: string;
   token: string;
+  autoDownload: boolean;
+  downloadPath: string | null;
 }
 
 const DEFAULT_SETTINGS: Settings = {
   baseUrl: "",
   token: "",
+  autoDownload: false,
+  downloadPath: null,
 };
 
 export async function loadSettings(): Promise<Settings> {

@@ -3,6 +3,9 @@ import * as pdfFonts from "pdfmake/build/vfs_fonts";
 import { TDocumentDefinitions, Content, TableCell } from "pdfmake/interfaces";
 import { Material, ProductDetails } from "./calculation";
 import { partProcessFlags } from "./partFlags";
+import { loadSettings } from "./settings";
+import { invoke } from "@tauri-apps/api/core";
+import { join } from "@tauri-apps/api/path";
 
 // Assign VFS fonts safely bypassing TypeScript's strict module checks
 (pdfMake as any).vfs = pdfFonts && (pdfFonts as any).pdfMake ? (pdfFonts as any).pdfMake.vfs : pdfFonts;
@@ -366,6 +369,17 @@ export function buildPdfDefinition(
   };
 }
 
+export async function savePdfToCustomPath(filePath: string, pdfBuffer: Uint8Array) {
+  try {
+    await invoke("save_file_to_disk", {
+      path: filePath, // e.g., "C:\CustomFolder\Report.pdf" or "/Users/name/Docs/Report.pdf"
+      bytes: Array.from(pdfBuffer),
+    });
+    console.log(`PDF salvo em ${filePath}`);
+  } catch (error) {
+    console.error('Failed to write file:', error);
+  }
+}
 /**
  * Triggers PDF opening in a new browser tab/window inside Tauri.
  */
@@ -375,5 +389,14 @@ export async function generatePdf(
   materials: Material[]
 ) {
   const docDef = buildPdfDefinition(meta, details, materials);
-  return pdfMake.createPdf(docDef).getBlob();
+  const createdPdf = pdfMake.createPdf(docDef);
+  const settings = await loadSettings();
+  
+  if (settings.autoDownload) {
+    const fileName = `${meta.client}-${meta.code}.pdf`.replace(/[/\\?%*:|"<>]/g, '_');
+    const buffer = await createdPdf.getBuffer();
+    const filePath = await join(settings.downloadPath as string, fileName);
+    await savePdfToCustomPath(filePath, buffer);
+  }
+  return createdPdf.getBlob();
 }
