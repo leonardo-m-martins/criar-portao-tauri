@@ -21,16 +21,8 @@ import { useDisclosure } from "@mantine/hooks";
 import { SettingsModal } from "./components/SettingsModal";
 import { buildMaterialsMap, calculateMaterials, Material, PartsMap, ProductDetails } from "./utils/calculation";
 import { getPartsMapByIpns } from "./utils/parts";
-
-// ============================================================
-// TODO: PDF FUNCTIONS
-// Move these to services/pdf.ts later
-// ============================================================
-
-async function generatePdf(data: unknown): Promise<Blob> {
-  // TODO: Implement PDF generation API call
-  return new Blob();
-}
+import { generatePdf } from "./utils/genPdf";
+import { openPdfWindow } from "./utils/pdfWindow";
 
 export default function App() {
 
@@ -177,22 +169,29 @@ export default function App() {
   );
 
   async function handlePdf() {
+    let productDetails: ProductDetails = {
+      folga: 45,
+      width: width,
+      height: height,
+      type1: type1,
+      type2: type2,
+      fechadaOuTransvision: closed,
+      flag: flag,
+      door: door,
+      trapdoor: trapdoor
+    }
     const blob = await generatePdf({
       client: selectedClient,
-      code,
-      width,
-      height,
-      color,
-    });
+      code: code,
+      color: color,
+      date: new Date().toLocaleDateString("pt-BR")
+    }, productDetails, materials);
 
     const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${selectedClient}-${code}.pdf`;
-    a.click();
+    openPdfWindow(url, `${clientName}-${code}`);
 
-    URL.revokeObjectURL(url);
+    // URL.revokeObjectURL(url);
   }
 
   useEffect(() => {
@@ -206,11 +205,6 @@ export default function App() {
       getPartsMapEffect();
     }
   }, [configured])
-
-  useEffect(() => {
-
-  }, [configured, partsMap])
-
 
   return (
     <Paper

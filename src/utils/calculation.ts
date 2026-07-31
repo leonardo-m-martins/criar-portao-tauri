@@ -207,7 +207,7 @@ function calcAllLaminas(details: ProductCalculationDetails, partsMap: PartsMap):
 export function calculateMaterials(details: ProductDetails, partsMap?: PartsMap): Material[] {
   if (partsMap === undefined)
     return [];
-  
+
   const cDetails = calcDetails(details);
   const materials: Material[] = [];
 
@@ -264,7 +264,7 @@ export function calculateMaterials(details: ProductDetails, partsMap?: PartsMap)
 
   // 7. Testeira
   materials.push({
-    part: partsMap[PART_IPNS.virtTesteira] ?? partsMap[PART_IPNS.testeira],
+    part: partsMap[PART_IPNS.virtTesteira],
     selected: true,
     quantity: 1,
     measure: medidaMotor,
@@ -273,7 +273,7 @@ export function calculateMaterials(details: ProductDetails, partsMap?: PartsMap)
 
   // 8. Soleira T chapa dupla
   materials.push({
-    part: partsMap[PART_IPNS.virtSoleiraTChapaDupla] ?? partsMap[PART_IPNS.soleiraTChapaDupla],
+    part: partsMap[PART_IPNS.virtSoleiraTChapaDupla],
     selected: !cDetails.big,
     quantity: 1,
     measure: widthLamina,
@@ -324,7 +324,7 @@ export function calculateMaterials(details: ProductDetails, partsMap?: PartsMap)
   // 14. Tubo 40 x 30 galvanizado 1,20m
   const numTraz = (cDetails.type1 === "Traz" ? 1 : 0) + (cDetails.type2 === "Traz" ? 1 : 0);
   materials.push({
-    part: partsMap[PART_IPNS.virtTubo40X30Galvanizado120m] ?? partsMap[PART_IPNS.tubo40X30Galvanizado120m],
+    part: partsMap[PART_IPNS.virtTubo40X30Galvanizado120m],
     selected: true,
     quantity: numTraz > 0 ? numTraz : 1,
     measure: cDetails.height,
@@ -342,7 +342,7 @@ export function calculateMaterials(details: ProductDetails, partsMap?: PartsMap)
 
   // 16. Barra de rosca
   materials.push({
-    part: partsMap[PART_IPNS.virtBarraDeRosca] ?? partsMap[PART_IPNS.barraDeRosca],
+    part: partsMap[PART_IPNS.virtBarraDeRosca],
     selected: true,
     quantity: 8,
   });
