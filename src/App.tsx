@@ -22,8 +22,30 @@ import { calculateMaterials, Material, PartsMap, ProductDetails } from "./utils/
 import { getPartsMapByIpns } from "./utils/parts";
 import { generatePdf } from "./utils/genPdf";
 import { openPdfWindow } from "./utils/pdfWindow";
+import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 
 export default function App() {
+
+  // ------------------------------------------------------------
+  // Update
+  // ------------------------------------------------------------
+
+  useEffect(() => {
+    async function checkForUpdate() {
+      try {
+        const update = await check();
+        if (update) {
+          await update.downloadAndInstall();
+          await relaunch();
+        }
+      } catch (error) {
+        console.error(`Falha ao procurar por atualizações: ${error}`);
+      }
+    }
+
+    checkForUpdate()
+  })
 
   const [configured, setConfigured] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
